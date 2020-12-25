@@ -18,6 +18,7 @@ void main() async {
   await _currentlyPlaying(spotify);
   await _devices(spotify);
   //await _createPrivatePlaylist(spotify);
+  await _followArtists(spotify);
 
   exit(0);
 }
@@ -29,8 +30,11 @@ Future<SpotifyApi> _getUserAuthenticatedSpotifyApi(
   var redirect = stdin.readLineSync();
 
   var grant = SpotifyApi.authorizationCodeGrant(credentials);
-  var authUri = grant.getAuthorizationUrl(Uri.parse(redirect),
-      scopes: ['user-read-playback-state', 'playlist-modify-private']);
+  var authUri = grant.getAuthorizationUrl(Uri.parse(redirect), scopes: [
+    'user-read-playback-state',
+    'playlist-modify-private',
+    'user-follow-modify'
+  ]);
 
   print(
       'Please paste this url \n\n$authUri\n\nto your browser and enter the redirected url:');
@@ -77,6 +81,16 @@ void _createPrivatePlaylist(SpotifyApi spotify) async {
       .then((playlist) {
     print('Private playlist created!');
   }).catchError(_prettyPrintError);
+}
+
+void _followArtists(SpotifyApi spotify) async {
+  await spotify.me
+      .follow(FollowingType.artist, [
+        '5INjqkS1o8h1imAzPqGZBb', // Tame Impala
+        '7Ln80lUS6He07XvHI8qqHH', // Arctic Monkeys
+      ])
+      .then((_) => print('Followed two artists!'))
+      .catchError(_prettyPrintError);
 }
 
 dynamic _prettyPrintError(Object error) {
